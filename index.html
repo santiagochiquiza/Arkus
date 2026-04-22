@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Arkus - Caída Libre</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="header">
+    <h1>Arkus</h1>
+    <p>Simulador de caída libre con arrastre lineal y cuadrático</p>
+  </header>
+
+  <main class="container">
+    <section class="panel controls">
+      <h2>Controles</h2>
+
+      <div class="control-group">
+        <label for="scenarioSelect">Escenario</label>
+        <select id="scenarioSelect">
+          <option value="tierra">Tierra</option>
+          <option value="luna">Luna</option>
+          <option value="jupiter">Júpiter</option>
+          <option value="subacuatico">Subacuático</option>
+          <option value="aceite">Aceite</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="modelType">Modelo principal</label>
+        <select id="modelType">
+          <option value="lineal">Lineal (F = -kv)</option>
+          <option value="cuadratico">Cuadrático (F = -kv²)</option>
+        </select>
+      </div>
+
+      <div class="control-group">
+        <label for="compareModels">Comparar modelos</label>
+        <select id="compareModels">
+          <option value="si" selected>Sí</option>
+          <option value="no">No</option>
+        </select>
+      </div>
+
+      <div class="control-group dual-input">
+        <label for="massRange">Masa (kg)</label>
+        <div class="input-row">
+          <input type="range" id="massRange" min="0.01" max="1" step="0.001" value="0.058" />
+          <input type="number" id="massNumber" min="0.01" max="1" step="0.001" value="0.058" />
+        </div>
+      </div>
+
+      <div class="control-group dual-input">
+        <label for="gravityRange">Gravedad (m/s²)</label>
+        <div class="input-row">
+          <input type="range" id="gravityRange" min="1.6" max="24.8" step="0.1" value="9.8" />
+          <input type="number" id="gravityNumber" min="1.6" max="24.8" step="0.1" value="9.8" />
+        </div>
+      </div>
+
+      <div class="control-group dual-input">
+        <label for="dragRange">Coeficiente k (Resistencia del aire)  </label>
+        <div class="input-row">
+          <input type="range" id="dragRange" min="0.001" max="50" step="0.0001" value="0.001" />
+          <input type="number" id="dragNumber" min="0.001" max="50" step="0.0001" value="0.001" />
+        </div>
+      </div>
+
+      <div class="control-group dual-input">
+        <label for="heightRange">Altura de caída (m)</label>
+        <div class="input-row">
+          <input type="range" id="heightRange" min="0.5" max="20" step="0.1" value="2.0" />
+          <input type="number" id="heightNumber" min="0.5" max="20" step="0.1" value="2.0" />
+        </div>
+      </div>
+
+      <div class="control-group dual-input">
+        <label for="landingRange">Lugar de caída / longitud de zona (m)</label>
+        <div class="input-row">
+          <input type="range" id="landingRange" min="2" max="30" step="0.5" value="8" />
+          <input type="number" id="landingNumber" min="2" max="30" step="0.5" value="8" />
+        </div>
+      </div>
+
+      <div class="current-values">
+        <h3>Valores actuales</h3>
+        <p>Masa: <span id="massValue">0.058</span> kg</p>
+        <p>Gravedad: <span id="gravityValue">9.8</span> m/s²</p>
+        <p>k: <span id="dragValue">0.11095</span></p>
+        <p>Altura: <span id="heightValue">2.0</span> m</p>
+        <p>Zona de caída: <span id="landingValue">8</span> m</p>
+      </div>
+
+      <div class="buttons">
+        <button id="startBtn">Iniciar</button>
+        <button id="pauseBtn">Pausar</button>
+        <button id="resetBtn">Reiniciar</button>
+      </div>
+    </section>
+
+    <section class="panel simulation-panel">
+      <h2>Ventana de prueba</h2>
+      <canvas id="gameCanvas" width="860" height="520"></canvas>
+      <p id="statusMessage" class="status">Listo para simular.</p>
+    </section>
+
+    <section class="panel results">
+      <h2>Resultados</h2>
+      <div class="results-grid">
+        <p>Escenario: <span id="scenarioValue">Tierra</span></p>
+        <p>Modelo principal: <span id="modelValue">Lineal</span></p>
+        <p>Tiempo: <span id="timeValue">0.000</span> s</p>
+        <p>Posición y(t): <span id="yValue">0.0000</span> m</p>
+        <p>Velocidad v(t): <span id="vValue">0.0000</span> m/s</p>
+        <p>Velocidad terminal: <span id="terminalValue">0.0000</span> m/s</p>
+        <p>% de vₜ alcanzado: <span id="percentValue">0.00</span>%</p>
+        <p>Tiempo de impacto: <span id="impactTimeValue">0.000</span> s</p>
+        <p>Impacto lineal: <span id="impactLinearValue">0.000</span> s</p>
+        <p>Impacto cuadrático: <span id="impactQuadraticValue">0.000</span> s</p>
+        <p>vₜ lineal: <span id="vtLinearValue">0.0000</span> m/s</p>
+        <p>vₜ cuadrática: <span id="vtQuadraticValue">0.0000</span> m/s</p>
+      </div>
+    </section>
+
+    <section class="panel charts-panel">
+      <h2>Gráficas</h2>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <canvas id="velocityChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <canvas id="positionChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <canvas id="percentChart"></canvas>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="js/js/physics.js"></script>
+  <script src="js/js/scenarios.js"></script>
+  <script src="js/js/ui.js"></script>
+  <script src="js/js/charts.js"></script>
+  <script src="js/js/main.js"></script>
+</body>
+</html>
