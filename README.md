@@ -1,3 +1,3 @@
 # Arkus
 
-#Se ejecuta crenado un live server 
+#Se ejecuta creado un live server (El cual se debe descargar en extensiones)
